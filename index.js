@@ -12,6 +12,7 @@ app.use(cors());
 // Data
 const beasts = [
   {
+    id: 1,
     name  : "Hydra",
     heads : 3,
     mythology : "greek"
@@ -19,12 +20,14 @@ const beasts = [
     
   },
   {
+    id: 2,
     name  : "Unicorn",
     heads : 1,
     mythology : "Scotland"
 
   },
   {
+    id: 3,
     name  : "Dragon",
     heads : 100,
     mythology : "English"
@@ -52,6 +55,31 @@ app.get('/v',(req,res)=>{
 app.get('/beasts',(req,res)=>{
     res.json(beasts);
 });
+
+// Route 4 --> getting beasts by single record --> params
+app.get('/beasts/:id',(req,res)=>{
+
+    const id = parseInt(req.params.id);
+    //console.log(typeof(id));
+
+    //Using array filter method to get th exact data
+    res.send(beasts.filter(items => items.id === id));
+
+});
+
+
+// Route 5 --> To get the query info from the URL --> query
+app.get('/beast',(req,res)=>{
+
+    //console.log(req.query);
+    //http://localhost:8011/beast?name=Hydra
+
+    const name = req.query.name;
+    res.send(beasts.filter(item => item.name === name));
+
+
+});
+
 
 
 
