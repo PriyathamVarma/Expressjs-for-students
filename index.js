@@ -2,85 +2,111 @@
 // Imports
 // Import express from 'express';
 const express = require('express');
-const app = express();// Run express when this page is rendered/loaded
-
+// Axios
+const axios = require('axios');
 const cors = require('cors');
-const res = require('express/lib/response');
+// File System management
+const fs = require('fs');
+
+const dotenv = require('dotenv');
+dotenv.config();
+
+const app = express();
+// Run express when this page is rendered/loaded
+
+//const res = require('express/lib/response');
+// Middlewares
+// Middleware for CORS
 app.use(cors());
+// Middleware for JSON data recieving
+app.use(express.json());
 
 
 // Data
-const beasts = [
-  {
-    id: 1,
-    name  : "Hydra",
-    heads : 3,
-    mythology : "greek"
-
-    
-  },
-  {
-    id: 2,
-    name  : "Unicorn",
-    heads : 1,
-    mythology : "Scotland"
-
-  },
-  {
-    id: 3,
-    name  : "Dragon",
-    heads : 100,
-    mythology : "English"
-
-  },
-
-  // How to get the data here from the forms
-];
+const beasts = require('./Data/beasts.json');
 
 // Routes
-app.get('/',(request,response)=>{
-    
-    response.send('<h1>Hello</h1>');
-
-});
-
-// Route 2
-app.get('/v',(req,res)=>{
-
-    res.send('<h1>V is the best </h1>');
-
-});
 
 // Route 3
 app.get('/beasts',(req,res)=>{
-    res.json(beasts);
-});
-
-// Route 4 --> getting beasts by single record --> params
-app.get('/beasts/:id',(req,res)=>{
-
-    const id = parseInt(req.params.id);
-    //console.log(typeof(id));
-
-    //Using array filter method to get th exact data
-    res.send(beasts.filter(items => items.id === id));
-
+  if(beasts){
+    res.send(beasts);
+  }else{
+    res.send("No data");
+  }
+    
 });
 
 
-// Route 5 --> To get the query info from the URL --> query
+// Queries
+app.get('/beasty',(req,res)=>{
+  //http://localhost:8011/beasty?name=something
+  const _name = req.query.name;
+  res.send(beasts.filter(items => items.description === _name));
+});
+
+// To get by query
 app.get('/beast',(req,res)=>{
+  const _beast = req.query.name;
 
-    //console.log(req.query);
-    //http://localhost:8011/beast?name=Hydra
+  const reqData = beasts.filter(items => items.name === _beast);
 
-    const name = req.query.name;
-    res.send(beasts.filter(item => item.name === name));
-
-
+  res.send(reqData);
 });
 
 
+
+// Route for posting
+app.post('/beasts',(req,res)=>{
+
+  const _id = beasts.length+1;
+
+  // Adding two objects
+  const newDataToBeAddedToBeasts = Object.assign({id:_id},req.body); 
+
+  // Adding to the array
+  beasts.push(newDataToBeAddedToBeasts);
+
+  console.log(typeof(beasts));
+  // Converting the object to an JSON
+  const neArray = JSON.stringify(beasts);
+
+  // Methods to write the data
+  // fs.writeFile(arg1,arg2,arg3*);
+  // arg1 is the path of the data
+  // arg2 will be the new data that has to be added
+  // arg3 which is a function which gets triggered when the method is called
+  fs.writeFile('./Data/beasts.json',neArray,()=>{
+    // Final step
+      res.send(neArray);
+  });
+});
+
+// Edit
+app.patch('/beast/:id',(req,res)=>{
+  // Get the ID
+  const _id = parseInt(req.params.id);
+
+  const _name = req.body.name;
+  const _heads = req.body.heads;
+  const _mythology = req.body.mythology;
+
+  // Get the index
+  const _index = _id-1;
+
+  // Change the thing
+  beasts[_index].name = _name;
+  beasts[_index].heads = _heads;
+  beasts[_index].mythology = _mythology;
+
+
+  // write to the file
+  fs.writeFile('./Data/beasts.json',JSON.stringify(beasts),()=>{
+    res.send(beasts);
+  });
+
+  
+});
 
 
 app.listen(8011,()=>{
