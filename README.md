@@ -1,4 +1,4 @@
-# Step
+# Steps
 ## Step 1:
 Create a folder
 
